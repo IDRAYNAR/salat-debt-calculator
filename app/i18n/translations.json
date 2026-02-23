@@ -7,12 +7,14 @@
       "add": "Add",
       "back": "Back",
       "settings": "Settings",
+      "appName": "Qada Tracker",
+      "languageSelectAria": "Select language",
       "days": "days",
       "daysCompleted": "days completed"
     },
     "onboarding": {
       "title": "Missed Prayers Tracker",
-      "subtitle": "Calculate your prayer debt and start catching up",
+      "subtitle": "Estimate your prayer debt and start your catch-up journey",
       "years": "Years",
       "months": "Months",
       "days": "Days",
@@ -52,43 +54,93 @@
       "confirm": "Confirmer",
       "add": "Ajouter",
       "back": "Retour",
-      "settings": "Réglages",
+      "settings": "Paramètres",
+      "appName": "Qada Tracker",
+      "languageSelectAria": "Choisir la langue",
       "days": "jours",
       "daysCompleted": "jours complétés"
     },
     "onboarding": {
-      "title": "Suivi des Prières Manquées",
-      "subtitle": "Calculez votre dette de prières et commencez votre rattrapage",
+      "title": "Suivi des prières manquées",
+      "subtitle": "Estimez votre dette de prières et commencez votre rattrapage",
       "years": "Années",
       "months": "Mois",
       "days": "Jours",
       "errorPositive": "Les valeurs doivent être positives",
       "errorAtLeastOne": "Veuillez saisir au moins une valeur",
       "errorTotalPositive": "Le total doit être supérieur à 0",
-      "submit": "Calculer et Commencer"
+      "submit": "Calculer et commencer"
     },
     "dashboard": {
       "settingsAria": "Paramètres",
-      "daysCompleted": "Jours Rattrapés",
-      "daysRemaining": "Jours Restants",
-      "incrementButton": "+ 1 Journée Terminée",
+      "daysCompleted": "Jours complétés",
+      "daysRemaining": "Jours restants",
+      "incrementButton": "+ 1 jour complété",
       "undo": "Annuler",
       "congratsTitle": "Félicitations !",
-      "congratsMessage": "Vous avez terminé toutes vos prières manquées."
+      "congratsMessage": "Vous avez complété toutes vos prières manquées."
     },
     "settings": {
-      "title": "Réglages",
+      "title": "Paramètres",
       "backAria": "Retour",
-      "totalTarget": "Objectif Total",
+      "totalTarget": "Objectif total",
       "addToDebt": "Ajouter à la dette",
       "daysToAddLabel": "Nombre de jours à ajouter",
-      "daysToAddPlaceholder": "Ex: 3",
+      "daysToAddPlaceholder": "ex : 3",
       "errorPositiveNumber": "Veuillez saisir un nombre positif",
-      "dangerZone": "Zone de Danger",
-      "dangerDescription": "Réinitialiser supprimera toutes vos données. Cette action est irréversible.",
-      "resetButton": "Reset Total",
+      "dangerZone": "Zone de danger",
+      "dangerDescription": "La réinitialisation supprimera toutes vos données. Cette action est irréversible.",
+      "resetButton": "Réinitialisation complète",
       "resetConfirmTitle": "Êtes-vous sûr de vouloir tout réinitialiser ?",
       "resetConfirmMessage": "Toutes vos données seront perdues."
+    }
+  },
+  "ar": {
+    "common": {
+      "loading": "جار التحميل...",
+      "cancel": "إلغاء",
+      "confirm": "تأكيد",
+      "add": "إضافة",
+      "back": "رجوع",
+      "settings": "الإعدادات",
+      "appName": "Qada Tracker",
+      "languageSelectAria": "اختر اللغة",
+      "days": "أيام",
+      "daysCompleted": "أيام مكتملة"
+    },
+    "onboarding": {
+      "title": "متتبع الصلوات الفائتة",
+      "subtitle": "احسب ما عليك من قضاء وابدأ رحلة الإنجاز",
+      "years": "سنوات",
+      "months": "أشهر",
+      "days": "أيام",
+      "errorPositive": "يجب أن تكون القيم موجبة",
+      "errorAtLeastOne": "يرجى إدخال قيمة واحدة على الأقل",
+      "errorTotalPositive": "يجب أن يكون المجموع أكبر من 0",
+      "submit": "احسب وابدأ"
+    },
+    "dashboard": {
+      "settingsAria": "الإعدادات",
+      "daysCompleted": "الأيام المنجزة",
+      "daysRemaining": "الأيام المتبقية",
+      "incrementButton": "+ إتمام يوم واحد",
+      "undo": "تراجع",
+      "congratsTitle": "أحسنت!",
+      "congratsMessage": "لقد أكملت جميع الصلوات الفائتة."
+    },
+    "settings": {
+      "title": "الإعدادات",
+      "backAria": "رجوع",
+      "totalTarget": "الهدف الكلي",
+      "addToDebt": "إضافة إلى الدين",
+      "daysToAddLabel": "عدد الأيام المراد إضافتها",
+      "daysToAddPlaceholder": "مثال: 3",
+      "errorPositiveNumber": "يرجى إدخال رقم موجب",
+      "dangerZone": "منطقة حساسة",
+      "dangerDescription": "إعادة الضبط ستحذف كل بياناتك. لا يمكن التراجع بعد ذلك.",
+      "resetButton": "إعادة ضبط كاملة",
+      "resetConfirmTitle": "هل أنت متأكد من إعادة ضبط كل شيء؟",
+      "resetConfirmMessage": "ستفقد جميع بياناتك."
     }
   }
 }

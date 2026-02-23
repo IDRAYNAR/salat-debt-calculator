@@ -11,8 +11,8 @@ export default function Home() {
 
   if (!mounted || !langMounted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900">
-        <div className="text-slate-400">{t("common", "loading")}</div>
+      <div className="sa-page flex items-center justify-center">
+        <div className="sa-card-soft px-6 py-4 text-sm font-medium sa-muted">{t("common", "loading")}</div>
       </div>
     );
   }

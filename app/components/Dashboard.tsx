@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Settings, CheckCircle2, RotateCcw } from "lucide-react";
+import { CheckCircle2, RotateCcw, Settings } from "lucide-react";
 import { useQadaStorage } from "./useLocalStorage";
 import { ProgressCircle } from "./ProgressCircle";
 import { calculateProgress, formatNumber } from "../lib/calculations";
@@ -11,7 +11,7 @@ import { useLanguage } from "../i18n/LanguageProvider";
 
 export function Dashboard() {
   const { state, actions } = useQadaStorage();
-  const { t } = useLanguage();
+  const { t, locale, isRtl } = useLanguage();
   const [showSettings, setShowSettings] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -21,7 +21,7 @@ export function Dashboard() {
   const handleIncrement = () => {
     setIsAnimating(true);
     actions.incrementDay();
-    setTimeout(() => setIsAnimating(false), 300);
+    setTimeout(() => setIsAnimating(false), 280);
   };
 
   const handleDecrement = () => {
@@ -39,79 +39,67 @@ export function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen p-4 pb-8">
-      <div className="flex justify-end items-center gap-2 mb-6">
-        <LanguageSwitch />
-        <button
-          onClick={() => setShowSettings(true)}
-          className="p-2 text-slate-400 hover:text-emerald-500 transition-colors"
-          aria-label={t("dashboard", "settingsAria")}
-        >
-          <Settings size={24} />
-        </button>
-      </div>
-
-      <div className="max-w-md mx-auto space-y-8">
-        <div className="flex justify-center">
-          <ProgressCircle
-            progress={progress}
-            size={220}
-            strokeWidth={14}
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-slate-800 rounded-lg p-6 text-center">
-            <div className="text-2xl font-bold text-emerald-500 mb-1">
-              {formatNumber(state.completed)}
-            </div>
-            <div className="text-sm text-slate-400">{t("dashboard", "daysCompleted")}</div>
+    <div className="sa-page">
+      <div className="sa-shell space-y-7">
+        <div className={`sa-topbar ${isRtl ? "flex-row-reverse" : ""}`}>
+          <div className="sa-card-soft px-4 py-2 text-xs font-semibold tracking-[0.12em] uppercase sa-gold">
+            {t("common", "appName")}
           </div>
-          <div className="bg-slate-800 rounded-lg p-6 text-center">
-            <div className="text-2xl font-bold text-slate-300 mb-1">
-              {formatNumber(remaining)}
-            </div>
-            <div className="text-sm text-slate-400">{t("dashboard", "daysRemaining")}</div>
+
+          <div className={`flex items-center gap-2 ${isRtl ? "flex-row-reverse" : ""}`}>
+            <LanguageSwitch />
+            <button
+              onClick={() => setShowSettings(true)}
+              className="sa-icon-btn"
+              aria-label={t("dashboard", "settingsAria")}
+            >
+              <Settings size={22} />
+            </button>
           </div>
         </div>
 
-        <div className="space-y-4">
+        <section className="sa-card sa-animate-in">
+          <div className="mb-6 flex justify-center">
+            <ProgressCircle progress={progress} size={230} strokeWidth={14} locale={locale} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="sa-card-soft text-center">
+              <div className="sa-kpi-value-primary mb-1">{formatNumber(state.completed, locale)}</div>
+              <div className="text-sm sa-muted">{t("dashboard", "daysCompleted")}</div>
+            </div>
+
+            <div className="sa-card-soft text-center">
+              <div className="sa-kpi-value mb-1">{formatNumber(remaining, locale)}</div>
+              <div className="text-sm sa-muted">{t("dashboard", "daysRemaining")}</div>
+            </div>
+          </div>
+        </section>
+
+        <section className="space-y-4">
           <button
             onClick={handleIncrement}
             disabled={state.completed >= state.totalTarget}
-            className={`w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 transform ${
-              isAnimating
-                ? "scale-95"
-                : "hover:scale-105 active:scale-95"
-            } ${
-              state.completed >= state.totalTarget
-                ? "opacity-50 cursor-not-allowed"
-                : ""
-            } flex items-center justify-center gap-2`}
+            className={`sa-btn-primary ${isAnimating ? "scale-[0.99]" : ""}`}
           >
-            <CheckCircle2 size={24} />
+            <CheckCircle2 size={22} />
             <span>{t("dashboard", "incrementButton")}</span>
           </button>
 
           {state.completed > 0 && (
-            <button
-              onClick={handleDecrement}
-              className="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
-            >
-              <RotateCcw size={20} />
+            <button onClick={handleDecrement} className="sa-btn-secondary">
+              <RotateCcw size={18} />
               <span>{t("dashboard", "undo")}</span>
             </button>
           )}
-        </div>
+        </section>
 
         {state.completed >= state.totalTarget && state.totalTarget > 0 && (
-          <div className="bg-emerald-500/20 border border-emerald-500/50 rounded-lg p-4 text-center">
-            <div className="text-emerald-400 font-semibold mb-1">
+          <div className="sa-success-block sa-animate-in">
+            <div className="mb-1 text-base font-semibold text-emerald-200">
               {t("dashboard", "congratsTitle")}
             </div>
-            <div className="text-sm text-slate-300">
-              {t("dashboard", "congratsMessage")}
-            </div>
+            <div className="text-sm sa-muted">{t("dashboard", "congratsMessage")}</div>
           </div>
         )}
       </div>

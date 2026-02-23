@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, AlertTriangle } from "lucide-react";
+import { AlertTriangle, ArrowLeft } from "lucide-react";
 import { useQadaStorage, type QadaState } from "./useLocalStorage";
 import { formatNumber } from "../lib/calculations";
 import { useLanguage } from "../i18n/LanguageProvider";
@@ -14,7 +14,7 @@ interface SettingsProps {
 }
 
 export function Settings({ onBack, state, actions }: SettingsProps) {
-  const { t } = useLanguage();
+  const { t, locale, isRtl } = useLanguage();
   const [daysToAdd, setDaysToAdd] = useState("");
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [error, setError] = useState("");
@@ -40,120 +40,95 @@ export function Settings({ onBack, state, actions }: SettingsProps) {
   };
 
   return (
-    <div className="min-h-screen p-4">
-      <div className="max-w-md mx-auto space-y-6">
-        <div className="flex items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={onBack}
-              className="p-2 text-slate-400 hover:text-emerald-500 transition-colors"
-              aria-label={t("settings", "backAria")}
-            >
-              <ArrowLeft size={24} />
+    <div className="sa-page">
+      <div className="sa-shell space-y-6">
+        <div className={`sa-topbar ${isRtl ? "flex-row-reverse" : ""}`}>
+          <div className={`flex items-center gap-3 ${isRtl ? "flex-row-reverse" : ""}`}>
+            <button onClick={onBack} className="sa-icon-btn" aria-label={t("settings", "backAria")}>
+              <ArrowLeft size={22} className={isRtl ? "rotate-180" : ""} />
             </button>
-            <h1 className="text-2xl font-bold text-slate-50">{t("settings", "title")}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">{t("settings", "title")}</h1>
           </div>
+
           <LanguageSwitch />
         </div>
 
-        <div className="bg-slate-800 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-slate-300 mb-2">
-            {t("settings", "totalTarget")}
-          </h2>
-          <div className="text-3xl font-bold text-emerald-500">
-            {formatNumber(state.totalTarget)} {t("common", "days")}
+        <section className="sa-card sa-animate-in">
+          <h2 className="mb-2 text-lg font-semibold sa-gold">{t("settings", "totalTarget")}</h2>
+          <div className="sa-kpi-value-primary">
+            {formatNumber(state.totalTarget, locale)} {t("common", "days")}
           </div>
-          <div className="text-sm text-slate-400 mt-1">
-            {formatNumber(state.completed)} {t("common", "daysCompleted")}
+          <div className="mt-1 text-sm sa-muted">
+            {formatNumber(state.completed, locale)} {t("common", "daysCompleted")}
           </div>
-        </div>
+        </section>
 
-        <div className="bg-slate-800 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-slate-300 mb-4">
-            {t("settings", "addToDebt")}
-          </h2>
+        <section className="sa-card sa-animate-in">
+          <h2 className="mb-4 text-lg font-semibold">{t("settings", "addToDebt")}</h2>
+
           <form onSubmit={handleAddDebt} className="space-y-4">
             <div>
-              <label
-                htmlFor="daysToAdd"
-                className="block text-sm font-medium text-slate-300 mb-2"
-              >
+              <label htmlFor="daysToAdd" className="sa-label">
                 {t("settings", "daysToAddLabel")}
               </label>
               <input
                 id="daysToAdd"
                 type="number"
                 min="1"
+                inputMode="numeric"
                 value={daysToAdd}
                 onChange={(e) => {
                   setDaysToAdd(e.target.value);
                   setError("");
                 }}
-                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="sa-input"
                 placeholder={t("settings", "daysToAddPlaceholder")}
               />
             </div>
+
             {error && (
-              <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 text-red-400 text-sm">
+              <div className="rounded-xl border border-red-300/30 bg-red-500/15 px-4 py-3 text-sm text-red-100">
                 {error}
               </div>
             )}
-            <button
-              type="submit"
-              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95"
-            >
+
+            <button type="submit" className="sa-btn-primary">
               {t("common", "add")}
             </button>
           </form>
-        </div>
+        </section>
 
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-6">
-          <div className="flex items-start gap-3 mb-4">
-            <AlertTriangle className="text-red-500 flex-shrink-0 mt-0.5" size={20} />
+        <section className="sa-danger-block sa-animate-in">
+          <div className={`mb-4 flex items-start gap-3 ${isRtl ? "flex-row-reverse text-right" : ""}`}>
+            <AlertTriangle className="mt-0.5 shrink-0 text-red-300" size={19} />
             <div>
-              <h2 className="text-lg font-semibold text-red-400 mb-1">
-                {t("settings", "dangerZone")}
-              </h2>
-              <p className="text-sm text-slate-400">
-                {t("settings", "dangerDescription")}
-              </p>
+              <h2 className="mb-1 text-lg font-semibold text-red-100">{t("settings", "dangerZone")}</h2>
+              <p className="text-sm text-red-100/80">{t("settings", "dangerDescription")}</p>
             </div>
           </div>
 
           {!showResetConfirm ? (
-            <button
-              onClick={() => setShowResetConfirm(true)}
-              className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200"
-            >
+            <button onClick={() => setShowResetConfirm(true)} className="sa-btn-danger">
               {t("settings", "resetButton")}
             </button>
           ) : (
             <div className="space-y-3">
-              <div className="bg-slate-900/50 rounded-lg p-4 text-center">
-                <p className="text-slate-300 mb-2">
-                  {t("settings", "resetConfirmTitle")}
-                </p>
-                <p className="text-sm text-slate-400">
-                  {t("settings", "resetConfirmMessage")}
-                </p>
+              <div className="rounded-xl border border-red-300/24 bg-black/25 px-4 py-3 text-center text-sm text-red-50/92">
+                <p className="mb-1">{t("settings", "resetConfirmTitle")}</p>
+                <p className="text-red-100/82">{t("settings", "resetConfirmMessage")}</p>
               </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowResetConfirm(false)}
-                  className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium py-3 px-6 rounded-lg transition-all duration-200"
-                >
+
+              <div className="flex gap-3" dir="ltr">
+                <button onClick={() => setShowResetConfirm(false)} className="sa-btn-secondary flex-1">
                   {t("common", "cancel")}
                 </button>
-                <button
-                  onClick={handleReset}
-                  className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200"
-                >
+                <button onClick={handleReset} className="sa-btn-danger flex-1">
                   {t("common", "confirm")}
                 </button>
               </div>
             </div>
           )}
-        </div>
+        </section>
       </div>
     </div>
   );

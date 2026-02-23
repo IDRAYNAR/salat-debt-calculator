@@ -1,23 +1,40 @@
 "use client";
 
-import { useLanguage } from "../i18n/LanguageProvider";
+import { type ChangeEvent } from "react";
+import { ChevronDown } from "lucide-react";
+import { useLanguage, type Locale } from "../i18n/LanguageProvider";
+
+const LOCALE_LABEL: Record<Locale, string> = {
+  en: "English",
+  fr: "Français",
+  ar: "العربية"
+};
 
 export function LanguageSwitch() {
-  const { locale, setLocale } = useLanguage();
+  const { locale, setLocale, t } = useLanguage();
 
-  const toggle = () => {
-    setLocale(locale === "en" ? "fr" : "en");
+  const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const next = event.target.value;
+    if (next === "en" || next === "fr" || next === "ar") {
+      setLocale(next);
+    }
   };
 
+  const ariaLabel = t("common", "languageSelectAria");
+
   return (
-    <button
-      type="button"
-      onClick={toggle}
-      className="px-3 py-1.5 text-sm font-medium rounded-lg text-slate-400 hover:text-emerald-500 bg-slate-800 hover:bg-slate-700 transition-colors border border-slate-600"
-      aria-label={locale === "en" ? "Switch to French" : "Passer en anglais"}
-      title={locale === "en" ? "French" : "English"}
-    >
-      {locale === "en" ? "FR" : "EN"}
-    </button>
+    <div className="sa-lang-select-wrap">
+      <select
+        className="sa-lang-select"
+        aria-label={ariaLabel}
+        value={locale}
+        onChange={handleChange}
+      >
+        <option value="en">{LOCALE_LABEL.en}</option>
+        <option value="fr">{LOCALE_LABEL.fr}</option>
+        <option value="ar">{LOCALE_LABEL.ar}</option>
+      </select>
+      <ChevronDown size={15} className="sa-lang-chevron" aria-hidden="true" />
+    </div>
   );
 }

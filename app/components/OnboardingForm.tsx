@@ -8,7 +8,7 @@ import { LanguageSwitch } from "./LanguageSwitch";
 
 export function OnboardingForm() {
   const { actions } = useQadaStorage();
-  const { t } = useLanguage();
+  const { t, isRtl } = useLanguage();
   const [years, setYears] = useState("");
   const [months, setMonths] = useState("");
   const [days, setDays] = useState("");
@@ -42,93 +42,83 @@ export function OnboardingForm() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
-      <div className="absolute top-4 right-4">
-        <LanguageSwitch />
-      </div>
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-50 mb-2">
-            {t("onboarding", "title")}
-          </h1>
-          <p className="text-slate-400">
-            {t("onboarding", "subtitle")}
-          </p>
+    <div className="sa-page flex items-center justify-center">
+      <div className="sa-shell">
+        <div className={`sa-topbar ${isRtl ? "flex-row-reverse" : ""}`}>
+          <div className="sa-card-soft px-4 py-2 text-xs font-semibold tracking-[0.12em] uppercase sa-gold">
+            {t("common", "appName")}
+          </div>
+          <LanguageSwitch />
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="bg-slate-800 rounded-lg p-6 space-y-6 shadow-xl"
-        >
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="years"
-                className="block text-sm font-medium text-slate-300 mb-2"
-              >
-                {t("onboarding", "years")}
-              </label>
-              <input
-                id="years"
-                type="number"
-                min="0"
-                value={years}
-                onChange={(e) => setYears(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                placeholder="0"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="months"
-                className="block text-sm font-medium text-slate-300 mb-2"
-              >
-                {t("onboarding", "months")}
-              </label>
-              <input
-                id="months"
-                type="number"
-                min="0"
-                value={months}
-                onChange={(e) => setMonths(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                placeholder="0"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="days"
-                className="block text-sm font-medium text-slate-300 mb-2"
-              >
-                {t("onboarding", "days")}
-              </label>
-              <input
-                id="days"
-                type="number"
-                min="0"
-                value={days}
-                onChange={(e) => setDays(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                placeholder="0"
-              />
-            </div>
+        <section className="sa-card sa-animate-in">
+          <div className={`mb-7 ${isRtl ? "text-right" : "text-left"}`}>
+            <h1 className="sa-heading mb-2">{t("onboarding", "title")}</h1>
+            <p className="sa-subheading">{t("onboarding", "subtitle")}</p>
           </div>
 
-          {error && (
-            <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 text-red-400 text-sm">
-              {error}
-            </div>
-          )}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div>
+                <label htmlFor="years" className="sa-label">
+                  {t("onboarding", "years")}
+                </label>
+                <input
+                  id="years"
+                  type="number"
+                  min="0"
+                  inputMode="numeric"
+                  value={years}
+                  onChange={(e) => setYears(e.target.value)}
+                  className="sa-input"
+                  placeholder="0"
+                />
+              </div>
 
-          <button
-            type="submit"
-            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95"
-          >
-            {t("onboarding", "submit")}
-          </button>
-        </form>
+              <div>
+                <label htmlFor="months" className="sa-label">
+                  {t("onboarding", "months")}
+                </label>
+                <input
+                  id="months"
+                  type="number"
+                  min="0"
+                  inputMode="numeric"
+                  value={months}
+                  onChange={(e) => setMonths(e.target.value)}
+                  className="sa-input"
+                  placeholder="0"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="days" className="sa-label">
+                  {t("onboarding", "days")}
+                </label>
+                <input
+                  id="days"
+                  type="number"
+                  min="0"
+                  inputMode="numeric"
+                  value={days}
+                  onChange={(e) => setDays(e.target.value)}
+                  className="sa-input"
+                  placeholder="0"
+                />
+              </div>
+            </div>
+
+            {error && (
+              <div className="rounded-xl border border-red-300/30 bg-red-500/15 px-4 py-3 text-sm text-red-100">
+                {error}
+              </div>
+            )}
+
+            <button type="submit" className="sa-btn-primary">
+              {t("onboarding", "submit")}
+            </button>
+          </form>
+        </section>
       </div>
     </div>
   );
