@@ -78,8 +78,8 @@ export function useQadaStorage() {
     };
 
     const handleCustomStorageChange = () => {
-      startTransition(() => {
-        loadState();
+      queueMicrotask(() => {
+        startTransition(loadState);
       });
     };
 
