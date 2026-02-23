@@ -3,9 +3,12 @@
 import { useState } from "react";
 import { useQadaStorage } from "./useLocalStorage";
 import { calculateTotalDays } from "../lib/calculations";
+import { useLanguage } from "../i18n/LanguageProvider";
+import { LanguageSwitch } from "./LanguageSwitch";
 
 export function OnboardingForm() {
   const { actions } = useQadaStorage();
+  const { t } = useLanguage();
   const [years, setYears] = useState("");
   const [months, setMonths] = useState("");
   const [days, setDays] = useState("");
@@ -20,18 +23,18 @@ export function OnboardingForm() {
     const daysNum = parseInt(days, 10) || 0;
 
     if (yearsNum < 0 || monthsNum < 0 || daysNum < 0) {
-      setError("Les valeurs doivent être positives");
+      setError(t("onboarding", "errorPositive"));
       return;
     }
 
     if (yearsNum === 0 && monthsNum === 0 && daysNum === 0) {
-      setError("Veuillez saisir au moins une valeur");
+      setError(t("onboarding", "errorAtLeastOne"));
       return;
     }
 
     const totalDays = calculateTotalDays(yearsNum, monthsNum, daysNum);
     if (totalDays <= 0) {
-      setError("Le total doit être supérieur à 0");
+      setError(t("onboarding", "errorTotalPositive"));
       return;
     }
 
@@ -39,14 +42,17 @@ export function OnboardingForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitch />
+      </div>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-slate-50 mb-2">
-            Suivi des Prières Manquées
+            {t("onboarding", "title")}
           </h1>
           <p className="text-slate-400">
-            Calculez votre dette de prières et commencez votre rattrapage
+            {t("onboarding", "subtitle")}
           </p>
         </div>
 
@@ -60,7 +66,7 @@ export function OnboardingForm() {
                 htmlFor="years"
                 className="block text-sm font-medium text-slate-300 mb-2"
               >
-                Années
+                {t("onboarding", "years")}
               </label>
               <input
                 id="years"
@@ -78,7 +84,7 @@ export function OnboardingForm() {
                 htmlFor="months"
                 className="block text-sm font-medium text-slate-300 mb-2"
               >
-                Mois
+                {t("onboarding", "months")}
               </label>
               <input
                 id="months"
@@ -96,7 +102,7 @@ export function OnboardingForm() {
                 htmlFor="days"
                 className="block text-sm font-medium text-slate-300 mb-2"
               >
-                Jours
+                {t("onboarding", "days")}
               </label>
               <input
                 id="days"
@@ -120,7 +126,7 @@ export function OnboardingForm() {
             type="submit"
             className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95"
           >
-            Calculer et Commencer
+            {t("onboarding", "submit")}
           </button>
         </form>
       </div>

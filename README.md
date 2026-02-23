@@ -13,6 +13,7 @@ Built with **Next.js**, **React**, and **Tailwind CSS**, this tool runs entirely
 * **🧮 Smart Calculation:** Input missed years, months, and days to automatically calculate the total number of days required to make up.
 * **📊 Progress Tracking:** Visual progress bar and percentage indicators to keep you motivated.
 * **💾 Local Persistence:** All data is saved automatically to the browser's `localStorage`. Your progress is safe even if you close the tab.
+* **🌐 English & French:** The app is in **English by default**. A language switch (EN/FR) next to the settings button lets you switch to French; your choice is saved in `localStorage` and restored on the next visit.
 * **🌙 Dark Mode UI:** A clean, minimal, and eye-friendly dark interface, perfect for late-night usage.
 * **⚙️ Adjustable Debt:** Life happens. You can easily add more days to your debt via the settings menu if needed.
 * **📱 Mobile First:** Fully responsive design that works perfectly on smartphones, tablets, and desktops.
@@ -73,6 +74,7 @@ Follow these steps to run the project locally on your machine.
     * Click the big **"+ 1 Day Completed"** button every time you finish a full day of Qadâ' (Subh, Dhuhr, Asr, Maghrib, Isha).
     * Use the **Undo** button if you clicked by mistake.
 4.  **Adjustments:** Click the **Settings (⚙️)** icon to view your total target, add to your debt, or reset your progress entirely.
+5.  **Language:** Use the **EN/FR** switch (next to the settings icon on the dashboard, or in the top-right on the onboarding screen) to switch between English and French. The app defaults to English; your selection is stored in `localStorage` and persists across sessions.
 
 ## 🔒 Privacy Policy
 
@@ -80,8 +82,8 @@ Follow these steps to run the project locally on your machine.
 
 * This application does **not** use a backend database.
 * This application does **not** use cookies for tracking.
-* All data is stored exclusively in your browser's `localStorage`.
-* If you clear your browser cache, your progress will be reset.
+* All data is stored exclusively in your browser's `localStorage` (including your language preference).
+* If you clear your browser cache, your progress and language choice will be reset.
 
 ## 🤝 Contributing
 

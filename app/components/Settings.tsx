@@ -4,6 +4,8 @@ import { useState } from "react";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { useQadaStorage, type QadaState } from "./useLocalStorage";
 import { formatNumber } from "../lib/calculations";
+import { useLanguage } from "../i18n/LanguageProvider";
+import { LanguageSwitch } from "./LanguageSwitch";
 
 interface SettingsProps {
   onBack: () => void;
@@ -12,6 +14,7 @@ interface SettingsProps {
 }
 
 export function Settings({ onBack, state, actions }: SettingsProps) {
+  const { t } = useLanguage();
   const [daysToAdd, setDaysToAdd] = useState("");
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [error, setError] = useState("");
@@ -22,7 +25,7 @@ export function Settings({ onBack, state, actions }: SettingsProps) {
 
     const days = parseInt(daysToAdd, 10);
     if (isNaN(days) || days <= 0) {
-      setError("Veuillez saisir un nombre positif");
+      setError(t("settings", "errorPositiveNumber"));
       return;
     }
 
@@ -39,32 +42,35 @@ export function Settings({ onBack, state, actions }: SettingsProps) {
   return (
     <div className="min-h-screen p-4">
       <div className="max-w-md mx-auto space-y-6">
-        <div className="flex items-center gap-4 mb-6">
-          <button
-            onClick={onBack}
-            className="p-2 text-slate-400 hover:text-emerald-500 transition-colors"
-            aria-label="Retour"
-          >
-            <ArrowLeft size={24} />
-          </button>
-          <h1 className="text-2xl font-bold text-slate-50">Réglages</h1>
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={onBack}
+              className="p-2 text-slate-400 hover:text-emerald-500 transition-colors"
+              aria-label={t("settings", "backAria")}
+            >
+              <ArrowLeft size={24} />
+            </button>
+            <h1 className="text-2xl font-bold text-slate-50">{t("settings", "title")}</h1>
+          </div>
+          <LanguageSwitch />
         </div>
 
         <div className="bg-slate-800 rounded-lg p-6">
           <h2 className="text-lg font-semibold text-slate-300 mb-2">
-            Objectif Total
+            {t("settings", "totalTarget")}
           </h2>
           <div className="text-3xl font-bold text-emerald-500">
-            {formatNumber(state.totalTarget)} jours
+            {formatNumber(state.totalTarget)} {t("common", "days")}
           </div>
           <div className="text-sm text-slate-400 mt-1">
-            {formatNumber(state.completed)} jours complétés
+            {formatNumber(state.completed)} {t("common", "daysCompleted")}
           </div>
         </div>
 
         <div className="bg-slate-800 rounded-lg p-6">
           <h2 className="text-lg font-semibold text-slate-300 mb-4">
-            Ajouter à la dette
+            {t("settings", "addToDebt")}
           </h2>
           <form onSubmit={handleAddDebt} className="space-y-4">
             <div>
@@ -72,7 +78,7 @@ export function Settings({ onBack, state, actions }: SettingsProps) {
                 htmlFor="daysToAdd"
                 className="block text-sm font-medium text-slate-300 mb-2"
               >
-                Nombre de jours à ajouter
+                {t("settings", "daysToAddLabel")}
               </label>
               <input
                 id="daysToAdd"
@@ -84,7 +90,7 @@ export function Settings({ onBack, state, actions }: SettingsProps) {
                   setError("");
                 }}
                 className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                placeholder="Ex: 3"
+                placeholder={t("settings", "daysToAddPlaceholder")}
               />
             </div>
             {error && (
@@ -96,7 +102,7 @@ export function Settings({ onBack, state, actions }: SettingsProps) {
               type="submit"
               className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95"
             >
-              Ajouter
+              {t("common", "add")}
             </button>
           </form>
         </div>
@@ -106,11 +112,10 @@ export function Settings({ onBack, state, actions }: SettingsProps) {
             <AlertTriangle className="text-red-500 flex-shrink-0 mt-0.5" size={20} />
             <div>
               <h2 className="text-lg font-semibold text-red-400 mb-1">
-                Zone de Danger
+                {t("settings", "dangerZone")}
               </h2>
               <p className="text-sm text-slate-400">
-                Réinitialiser supprimera toutes vos données. Cette action est
-                irréversible.
+                {t("settings", "dangerDescription")}
               </p>
             </div>
           </div>
@@ -120,16 +125,16 @@ export function Settings({ onBack, state, actions }: SettingsProps) {
               onClick={() => setShowResetConfirm(true)}
               className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200"
             >
-              Reset Total
+              {t("settings", "resetButton")}
             </button>
           ) : (
             <div className="space-y-3">
               <div className="bg-slate-900/50 rounded-lg p-4 text-center">
                 <p className="text-slate-300 mb-2">
-                  Êtes-vous sûr de vouloir tout réinitialiser ?
+                  {t("settings", "resetConfirmTitle")}
                 </p>
                 <p className="text-sm text-slate-400">
-                  Toutes vos données seront perdues.
+                  {t("settings", "resetConfirmMessage")}
                 </p>
               </div>
               <div className="flex gap-3">
@@ -137,13 +142,13 @@ export function Settings({ onBack, state, actions }: SettingsProps) {
                   onClick={() => setShowResetConfirm(false)}
                   className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium py-3 px-6 rounded-lg transition-all duration-200"
                 >
-                  Annuler
+                  {t("common", "cancel")}
                 </button>
                 <button
                   onClick={handleReset}
                   className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200"
                 >
-                  Confirmer
+                  {t("common", "confirm")}
                 </button>
               </div>
             </div>

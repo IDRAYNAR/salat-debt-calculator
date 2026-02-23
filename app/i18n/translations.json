@@ -1,0 +1,94 @@
+{
+  "en": {
+    "common": {
+      "loading": "Loading...",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "add": "Add",
+      "back": "Back",
+      "settings": "Settings",
+      "days": "days",
+      "daysCompleted": "days completed"
+    },
+    "onboarding": {
+      "title": "Missed Prayers Tracker",
+      "subtitle": "Calculate your prayer debt and start catching up",
+      "years": "Years",
+      "months": "Months",
+      "days": "Days",
+      "errorPositive": "Values must be positive",
+      "errorAtLeastOne": "Please enter at least one value",
+      "errorTotalPositive": "Total must be greater than 0",
+      "submit": "Calculate and Start"
+    },
+    "dashboard": {
+      "settingsAria": "Settings",
+      "daysCompleted": "Days Completed",
+      "daysRemaining": "Days Remaining",
+      "incrementButton": "+ 1 Day Completed",
+      "undo": "Undo",
+      "congratsTitle": "Congratulations!",
+      "congratsMessage": "You have completed all your missed prayers."
+    },
+    "settings": {
+      "title": "Settings",
+      "backAria": "Back",
+      "totalTarget": "Total Target",
+      "addToDebt": "Add to debt",
+      "daysToAddLabel": "Number of days to add",
+      "daysToAddPlaceholder": "e.g. 3",
+      "errorPositiveNumber": "Please enter a positive number",
+      "dangerZone": "Danger Zone",
+      "dangerDescription": "Reset will delete all your data. This action cannot be undone.",
+      "resetButton": "Full Reset",
+      "resetConfirmTitle": "Are you sure you want to reset everything?",
+      "resetConfirmMessage": "All your data will be lost."
+    }
+  },
+  "fr": {
+    "common": {
+      "loading": "Chargement...",
+      "cancel": "Annuler",
+      "confirm": "Confirmer",
+      "add": "Ajouter",
+      "back": "Retour",
+      "settings": "Réglages",
+      "days": "jours",
+      "daysCompleted": "jours complétés"
+    },
+    "onboarding": {
+      "title": "Suivi des Prières Manquées",
+      "subtitle": "Calculez votre dette de prières et commencez votre rattrapage",
+      "years": "Années",
+      "months": "Mois",
+      "days": "Jours",
+      "errorPositive": "Les valeurs doivent être positives",
+      "errorAtLeastOne": "Veuillez saisir au moins une valeur",
+      "errorTotalPositive": "Le total doit être supérieur à 0",
+      "submit": "Calculer et Commencer"
+    },
+    "dashboard": {
+      "settingsAria": "Paramètres",
+      "daysCompleted": "Jours Rattrapés",
+      "daysRemaining": "Jours Restants",
+      "incrementButton": "+ 1 Journée Terminée",
+      "undo": "Annuler",
+      "congratsTitle": "Félicitations !",
+      "congratsMessage": "Vous avez terminé toutes vos prières manquées."
+    },
+    "settings": {
+      "title": "Réglages",
+      "backAria": "Retour",
+      "totalTarget": "Objectif Total",
+      "addToDebt": "Ajouter à la dette",
+      "daysToAddLabel": "Nombre de jours à ajouter",
+      "daysToAddPlaceholder": "Ex: 3",
+      "errorPositiveNumber": "Veuillez saisir un nombre positif",
+      "dangerZone": "Zone de Danger",
+      "dangerDescription": "Réinitialiser supprimera toutes vos données. Cette action est irréversible.",
+      "resetButton": "Reset Total",
+      "resetConfirmTitle": "Êtes-vous sûr de vouloir tout réinitialiser ?",
+      "resetConfirmMessage": "Toutes vos données seront perdues."
+    }
+  }
+}
