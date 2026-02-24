@@ -40,12 +40,12 @@ export function derivePrayerStats(totalTarget: number, prayersRemaining: PrayerC
   const safeTotalTarget = Math.max(0, normalizeInteger(totalTarget));
   const normalizedRemaining = PRAYER_KEYS.reduce((total, key) => {
     const value = normalizeInteger(prayersRemaining[key]);
-    return total + Math.min(safeTotalTarget, value);
+    return total + value;
   }, 0);
 
   const totalPrayersTarget = safeTotalTarget * PRAYERS_PER_DAY;
   const totalPrayersRemaining = normalizedRemaining;
-  const totalPrayersCompleted = totalPrayersTarget - totalPrayersRemaining;
+  const totalPrayersCompleted = Math.max(0, totalPrayersTarget - totalPrayersRemaining);
   const daysRemaining = Math.max(0, Math.ceil(totalPrayersRemaining / PRAYERS_PER_DAY));
   const rawDaysCompleted = Math.floor(totalPrayersCompleted / PRAYERS_PER_DAY);
   const daysCompleted = Math.max(0, Math.min(safeTotalTarget, rawDaysCompleted));

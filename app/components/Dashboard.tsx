@@ -156,40 +156,39 @@ export function Dashboard() {
           </div>
         </div>
 
-        <section className="sa-history-bar sa-animate-in">
-          <div className="mb-3 grid grid-cols-2 gap-2">
+        <section className="sa-card sa-animate-in relative">
+          <div className="pointer-events-none absolute left-4 right-4 top-4 z-10 flex items-center justify-between">
             <button
               onClick={actions.undo}
               disabled={!history.canUndo}
-              className="sa-history-btn"
+              className="sa-history-corner-btn pointer-events-auto"
               aria-label={t("dashboard", "undoAria")}
+              title={nextUndoLabel}
             >
               <Undo2 size={16} />
-              <span>{t("dashboard", "undoButton")}</span>
-              <span className="sa-history-badge">{formatNumber(history.undoCount, locale)}</span>
+              <span className="sa-history-corner-badge">{formatNumber(history.undoCount, locale)}</span>
+              <span className="sr-only">{nextUndoLabel}</span>
             </button>
 
             <button
               onClick={actions.redo}
               disabled={!history.canRedo}
-              className="sa-history-btn"
+              className="sa-history-corner-btn pointer-events-auto"
               aria-label={t("dashboard", "redoAria")}
+              title={nextRedoLabel}
             >
               <Redo2 size={16} />
-              <span>{t("dashboard", "redoButton")}</span>
-              <span className="sa-history-badge">{formatNumber(history.redoCount, locale)}</span>
+              <span className="sa-history-corner-badge">{formatNumber(history.redoCount, locale)}</span>
+              <span className="sr-only">{nextRedoLabel}</span>
             </button>
           </div>
 
-          <div className={`sa-history-label space-y-1 ${isRtl ? "text-right" : "text-left"}`}>
-            <p>{nextUndoLabel}</p>
-            <p>{nextRedoLabel}</p>
-          </div>
-        </section>
+          <div className="pt-14">
+            <p className="sa-history-corner-hint">{t("dashboard", "historyCornerHint")}</p>
 
-        <section className="sa-card sa-animate-in">
-          <div className="mb-6 flex justify-center">
-            <ProgressCircle progress={progress} size={230} strokeWidth={14} locale={locale} />
+            <div className="mb-6 flex justify-center">
+              <ProgressCircle progress={progress} size={230} strokeWidth={14} locale={locale} />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -233,7 +232,6 @@ export function Dashboard() {
             {PRAYER_KEYS.map((prayer) => {
               const label = t("dashboard", PRAYER_LABELS[prayer]);
               const value = state.prayersRemaining[prayer];
-              const canUndoPrayer = value < state.totalTarget;
 
               return (
                 <div key={prayer} className={`sa-prayer-row ${isRtl ? "flex-row-reverse" : ""}`}>
@@ -252,7 +250,6 @@ export function Dashboard() {
                       onClick={() => actions.adjustPrayer(prayer, 1, "dashboard")}
                       className="sa-step-btn"
                       aria-label={`${t("dashboard", "prayerPlusAria")} ${label}`}
-                      disabled={!canUndoPrayer}
                     >
                       <Plus size={16} />
                     </button>

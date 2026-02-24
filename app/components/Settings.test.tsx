@@ -36,7 +36,7 @@ function createActions() {
     addDebt: vi.fn(),
     clearRedo: vi.fn(),
     clearHistory: vi.fn(),
-    replaceTracker: vi.fn(),
+    replaceTracker: vi.fn(() => true),
     getPersistedTracker: vi.fn(() => tracker),
     undo: vi.fn(),
     redo: vi.fn(),
@@ -144,5 +144,36 @@ describe("Settings", () => {
 
     expect(confirmSpy).not.toHaveBeenCalled();
     expect(actions.replaceTracker).not.toHaveBeenCalled();
+  });
+
+  it("shows invalid-tracker error when replaceTracker rejects imported data", async () => {
+    const { actions, container } = renderSettings();
+    actions.replaceTracker.mockReturnValue(false);
+
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement | null;
+    expect(input).not.toBeNull();
+    if (!input) return;
+
+    const validBackupPayload = JSON.stringify({
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      tracker: actions.getPersistedTracker(),
+      preferences: { locale: "en" }
+    });
+
+    const file = new File([validBackupPayload], "valid.json", { type: "application/json" });
+    Object.defineProperty(file, "text", {
+      value: () => Promise.resolve(validBackupPayload),
+      configurable: true
+    });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByText("Backup data is invalid.")).toBeInTheDocument();
+    });
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(actions.replaceTracker).toHaveBeenCalledTimes(1);
   });
 });

@@ -66,6 +66,7 @@ type LegacyQadaState = {
 };
 
 const STORAGE_KEY = "qada-tracker:v1";
+const STORAGE_SHADOW_KEY = `${STORAGE_KEY}:shadow`;
 const STORAGE_VERSION = 2;
 const HISTORY_LIMIT = 50;
 
@@ -157,17 +158,17 @@ function isValidHistoryAction(value: unknown): value is HistoryAction {
   if (!isHistoryActionType(action.type)) return false;
   if (!isFiniteNumber(action.at)) return false;
 
+  let requiredPayloadIsValid = true;
   if (action.type === "complete_prayer" || action.type === "undo_prayer") {
-    return isPrayerKey(action.prayer);
+    requiredPayloadIsValid = isPrayerKey(action.prayer);
   }
-
   if (action.type === "adjust_prayer") {
-    return isPrayerKey(action.prayer) && isFiniteNumber(action.amount);
+    requiredPayloadIsValid = isPrayerKey(action.prayer) && isFiniteNumber(action.amount);
   }
-
   if (action.type === "add_debt") {
-    return isFiniteNumber(action.amount);
+    requiredPayloadIsValid = isFiniteNumber(action.amount);
   }
+  if (!requiredPayloadIsValid) return false;
 
   if (action.prayer !== undefined && !isPrayerKey(action.prayer)) return false;
   if (action.amount !== undefined && !isFiniteNumber(action.amount)) return false;
@@ -214,7 +215,7 @@ function sanitizeState(state: QadaState): QadaState {
   const prayersRemaining = PRAYER_KEYS.reduce((next, key) => {
     const value = state.prayersRemaining[key];
     const normalized = isFiniteNumber(value) ? Math.floor(value) : 0;
-    next[key] = Math.min(totalTarget, normalized);
+    next[key] = normalized;
     return next;
   }, {} as PrayerCounts);
 
@@ -231,7 +232,12 @@ function sanitizeHistoryAction(action: HistoryAction): HistoryAction {
     at: isFiniteNumber(action.at) ? Math.floor(action.at) : Date.now()
   };
 
-  if ((action.type === "complete_prayer" || action.type === "undo_prayer") && isPrayerKey(action.prayer)) {
+  if (
+    (action.type === "complete_prayer" ||
+      action.type === "undo_prayer" ||
+      action.type === "adjust_prayer") &&
+    isPrayerKey(action.prayer)
+  ) {
     sanitized.prayer = action.prayer;
   }
 
@@ -275,6 +281,74 @@ function sanitizePersistedTracker(tracker: PersistedTracker): PersistedTracker {
   };
 }
 
+function decodePersistedPayload(payload: unknown): PersistedTracker | null {
+  if (isValidPersistedTracker(payload)) {
+    return sanitizePersistedTracker(payload);
+  }
+
+  if (isValidState(payload)) {
+    const migrated: PersistedTracker = {
+      version: STORAGE_VERSION,
+      current: sanitizeState(payload),
+      history: createEmptyHistory()
+    };
+    return sanitizePersistedTracker(migrated);
+  }
+
+  if (isValidLegacyState(payload)) {
+    return sanitizePersistedTracker(migrateLegacyState(payload));
+  }
+
+  return null;
+}
+
+function parseStoredTracker(raw: string | null): PersistedTracker | null {
+  if (!raw) return null;
+  return decodePersistedPayload(safeParse(raw));
+}
+
+function hasTrackerContent(tracker: PersistedTracker): boolean {
+  return (
+    tracker.current.initialized ||
+    tracker.current.totalTarget > 0 ||
+    tracker.history.past.length > 0 ||
+    tracker.history.future.length > 0
+  );
+}
+
+function prepareTrackerForPersistence(candidate: PersistedTracker): PersistedTracker | null {
+  const sanitized = sanitizePersistedTracker(candidate);
+  if (!isValidPersistedTracker(sanitized)) return null;
+  return sanitized;
+}
+
+function safeStorageGetItem(key: string): string | null {
+  try {
+    return window.localStorage.getItem(key);
+  } catch (error) {
+    console.error(`Failed to read storage key "${key}".`, error);
+    return null;
+  }
+}
+
+function safeStorageSetItem(key: string, value: string): boolean {
+  try {
+    window.localStorage.setItem(key, value);
+    return true;
+  } catch (error) {
+    console.error(`Failed to write storage key "${key}".`, error);
+    return false;
+  }
+}
+
+function safeStorageRemoveItem(key: string): void {
+  try {
+    window.localStorage.removeItem(key);
+  } catch (error) {
+    console.error(`Failed to remove storage key "${key}".`, error);
+  }
+}
+
 function migrateLegacyState(state: LegacyQadaState): PersistedTracker {
   const totalTarget = Math.max(0, Math.floor(state.totalTarget));
   const completed = Math.max(0, Math.min(totalTarget, Math.floor(state.completed)));
@@ -306,7 +380,7 @@ function adjustPrayerValue(state: QadaState, prayer: PrayerKey, delta: number): 
   if (normalizedDelta === 0) return state;
 
   const currentValue = state.prayersRemaining[prayer];
-  const nextValue = Math.min(state.totalTarget, currentValue + normalizedDelta);
+  const nextValue = currentValue + normalizedDelta;
   if (nextValue === currentValue) return state;
 
   return {
@@ -343,45 +417,65 @@ export function useQadaStorage() {
     []
   );
 
+  const persistPreparedTracker = useCallback((next: PersistedTracker) => {
+    const serialized = JSON.stringify(next);
+    const primarySaved = safeStorageSetItem(STORAGE_KEY, serialized);
+    const shadowSaved = safeStorageSetItem(STORAGE_SHADOW_KEY, serialized);
+
+    if (!primarySaved && !shadowSaved) {
+      console.error("Failed to persist tracker to localStorage on both keys.");
+    }
+  }, []);
+
+  const prepareAndPersistTracker = useCallback(
+    (next: PersistedTracker): PersistedTracker | null => {
+      const prepared = prepareTrackerForPersistence(next);
+      if (!prepared) {
+        console.error("Refusing to persist an invalid tracker payload.");
+        return null;
+      }
+
+      persistPreparedTracker(prepared);
+      return prepared;
+    },
+    [persistPreparedTracker]
+  );
+
   const loadTracker = useCallback(() => {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
+    const primaryRaw = safeStorageGetItem(STORAGE_KEY);
+    const primaryTracker = parseStoredTracker(primaryRaw);
+
+    if (primaryTracker) {
+      setTracker(primaryTracker);
+      setLastHistoryEvent(null);
+      persistPreparedTracker(primaryTracker);
+      return;
+    }
+
+    const shadowRaw = safeStorageGetItem(STORAGE_SHADOW_KEY);
+    const shadowTracker = parseStoredTracker(shadowRaw);
+
+    if (shadowTracker) {
+      setTracker(shadowTracker);
+      setLastHistoryEvent(null);
+      persistPreparedTracker(shadowTracker);
+      return;
+    }
+
+    if (!primaryRaw && !shadowRaw) {
       setTracker(createDefaultTracker());
       setLastHistoryEvent(null);
       return;
     }
 
-    const parsed = safeParse(raw);
-    if (isValidPersistedTracker(parsed)) {
-      setTracker(sanitizePersistedTracker(parsed));
-      setLastHistoryEvent(null);
-      return;
-    }
-
-    if (isValidState(parsed)) {
-      const migrated: PersistedTracker = {
-        version: STORAGE_VERSION,
-        current: sanitizeState(parsed),
-        history: createEmptyHistory()
-      };
-      const sanitized = sanitizePersistedTracker(migrated);
-      setTracker(sanitized);
-      setLastHistoryEvent(null);
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitized));
-      return;
-    }
-
-    if (isValidLegacyState(parsed)) {
-      const migrated = sanitizePersistedTracker(migrateLegacyState(parsed));
-      setTracker(migrated);
-      setLastHistoryEvent(null);
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+    if (hasTrackerContent(trackerRef.current)) {
+      console.error("Storage payload is invalid on both keys. Keeping in-memory tracker state.");
       return;
     }
 
     setTracker(createDefaultTracker());
     setLastHistoryEvent(null);
-  }, []);
+  }, [persistPreparedTracker]);
 
   useEffect(() => {
     setMounted(true);
@@ -390,7 +484,7 @@ export function useQadaStorage() {
 
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY) {
+      if (e.key === null || e.key === STORAGE_KEY || e.key === STORAGE_SHADOW_KEY) {
         startTransition(() => {
           loadTracker();
         });
@@ -424,13 +518,15 @@ export function useQadaStorage() {
     pendingHistoryEventRef.current = undefined;
   }, [tracker]);
 
-  const persistTracker = useCallback((next: PersistedTracker) => {
-    const sanitized = sanitizePersistedTracker(next);
-    setTracker(sanitized);
+  const persistTracker = useCallback((next: PersistedTracker): boolean => {
+    const prepared = prepareAndPersistTracker(next);
+    if (!prepared) return false;
+
+    setTracker(prepared);
     skipNextCustomLoadRef.current = true;
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitized));
     window.dispatchEvent(new Event("qada-storage-change"));
-  }, []);
+    return true;
+  }, [prepareAndPersistTracker]);
 
   const applyTrackerUpdate = useCallback(
     (
@@ -444,15 +540,19 @@ export function useQadaStorage() {
         const result = updater(previous);
         if (!result.changed) return previous;
 
-        const sanitized = sanitizePersistedTracker(result.next);
+        const prepared = prepareAndPersistTracker(result.next);
+        if (!prepared) {
+          pendingHistoryEventRef.current = null;
+          return previous;
+        }
+
         skipNextCustomLoadRef.current = true;
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitized));
         window.dispatchEvent(new Event("qada-storage-change"));
         pendingHistoryEventRef.current = result.event;
-        return sanitized;
+        return prepared;
       });
     },
-    []
+    [prepareAndPersistTracker]
   );
 
   const commitTrackerAction = useCallback(
@@ -484,7 +584,7 @@ export function useQadaStorage() {
     return {
       start(totalTarget: number) {
         const cleanTarget = Math.max(0, Math.floor(totalTarget));
-        persistTracker({
+        const persisted = persistTracker({
           version: STORAGE_VERSION,
           current: {
             initialized: cleanTarget > 0,
@@ -493,7 +593,10 @@ export function useQadaStorage() {
           },
           history: createEmptyHistory()
         });
-        setLastHistoryEvent(null);
+
+        if (persisted) {
+          setLastHistoryEvent(null);
+        }
       },
       incrementDay() {
         commitTrackerAction(
@@ -540,7 +643,19 @@ export function useQadaStorage() {
       undoPrayer(prayer: PrayerKey) {
         commitTrackerAction(
           { type: "undo_prayer", prayer, at: Date.now() },
-          (previous) => adjustPrayerValue(previous, prayer, 1)
+          (previous) => {
+            const currentValue = previous.prayersRemaining[prayer];
+            const nextValue = Math.min(previous.totalTarget, currentValue + 1);
+            if (nextValue === currentValue) return previous;
+
+            return {
+              ...previous,
+              prayersRemaining: {
+                ...previous.prayersRemaining,
+                [prayer]: nextValue
+              }
+            };
+          }
         );
       },
       addDebt(daysToAdd: number) {
@@ -557,7 +672,7 @@ export function useQadaStorage() {
               totalTarget: nextTarget,
               prayersRemaining: mapPrayerCounts(
                 previous.prayersRemaining,
-                (value) => Math.min(nextTarget, value + add)
+                (value) => value + add
               )
             };
           }
@@ -600,8 +715,11 @@ export function useQadaStorage() {
         });
       },
       replaceTracker(payload: PersistedTracker) {
-        persistTracker(payload);
-        setLastHistoryEvent(null);
+        const persisted = persistTracker(payload);
+        if (persisted) {
+          setLastHistoryEvent(null);
+        }
+        return persisted;
       },
       getPersistedTracker() {
         return sanitizePersistedTracker(trackerRef.current);
@@ -643,7 +761,8 @@ export function useQadaStorage() {
         });
       },
       reset() {
-        window.localStorage.removeItem(STORAGE_KEY);
+        safeStorageRemoveItem(STORAGE_KEY);
+        safeStorageRemoveItem(STORAGE_SHADOW_KEY);
         setTracker(createDefaultTracker());
         setLastHistoryEvent(null);
         skipNextCustomLoadRef.current = true;

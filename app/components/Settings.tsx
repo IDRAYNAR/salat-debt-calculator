@@ -136,7 +136,12 @@ export function Settings({ onBack, state, actions, history, stats }: SettingsPro
       );
       if (!confirmed) return;
 
-      actions.replaceTracker(parsed.data.tracker);
+      const replaced = actions.replaceTracker(parsed.data.tracker);
+      if (!replaced) {
+        pushToast(t("settings", "importErrorInvalidTracker"), "error");
+        return;
+      }
+
       setLocale(parsed.data.preferences.locale);
       pushToast(t("settings", "importSuccess"), "success");
     } catch {

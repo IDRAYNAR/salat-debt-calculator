@@ -90,6 +90,35 @@ describe("backup serialization and parsing", () => {
     expect(result).toEqual({ ok: false, error: "invalid_tracker" });
   });
 
+  it("rejects invalid history actions in tracker payload", () => {
+    const payload = JSON.stringify({
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      tracker: {
+        version: 2,
+        current: createTracker().current,
+        history: {
+          past: [
+            {
+              before: createTracker().current,
+              after: createTracker().current,
+              action: {
+                type: "adjust_prayer",
+                amount: -1,
+                at: Date.now()
+              }
+            }
+          ],
+          future: []
+        }
+      },
+      preferences: { locale: "en" }
+    });
+
+    const result = parseBackup(payload);
+    expect(result).toEqual({ ok: false, error: "invalid_tracker" });
+  });
+
   it("rejects invalid locale", () => {
     const payload = JSON.stringify({
       version: 1,

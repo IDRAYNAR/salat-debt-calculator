@@ -71,6 +71,18 @@ function isValidHistoryAction(value: unknown): boolean {
   if (typeof action.type !== "string" || !ACTION_TYPE_SET.has(action.type)) return false;
   if (!isFiniteNumber(action.at)) return false;
 
+  let requiredPayloadIsValid = true;
+  if (action.type === "complete_prayer" || action.type === "undo_prayer") {
+    requiredPayloadIsValid = isPrayerKey(action.prayer);
+  }
+  if (action.type === "adjust_prayer") {
+    requiredPayloadIsValid = isPrayerKey(action.prayer) && isFiniteNumber(action.amount);
+  }
+  if (action.type === "add_debt") {
+    requiredPayloadIsValid = isFiniteNumber(action.amount);
+  }
+  if (!requiredPayloadIsValid) return false;
+
   if (action.prayer !== undefined && !isPrayerKey(action.prayer)) return false;
   if (action.amount !== undefined && !isFiniteNumber(action.amount)) return false;
   if (action.source !== undefined && action.source !== "dashboard" && action.source !== "settings") {

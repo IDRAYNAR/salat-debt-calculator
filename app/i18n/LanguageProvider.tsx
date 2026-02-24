@@ -61,8 +61,12 @@ function getDirection(locale: Locale): Direction {
 function getStoredLocale(): Locale {
   if (typeof window === "undefined") return DEFAULT_LOCALE;
 
-  const stored = window.localStorage.getItem(STORAGE_KEY);
-  if (stored === "en" || stored === "fr" || stored === "ar") return stored;
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    if (stored === "en" || stored === "fr" || stored === "ar") return stored;
+  } catch (error) {
+    console.error("Failed to read stored locale.", error);
+  }
 
   return DEFAULT_LOCALE;
 }
@@ -100,7 +104,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const setLocale = useCallback((next: Locale) => {
     const normalized = next === "ar" || next === "fr" ? next : DEFAULT_LOCALE;
     setLocaleState(normalized);
-    window.localStorage.setItem(STORAGE_KEY, normalized);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, normalized);
+    } catch (error) {
+      console.error("Failed to persist locale.", error);
+    }
   }, []);
 
   const t = useCallback(
