@@ -1,44 +1,65 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQadaStorage } from "./useLocalStorage";
-import { calculateTotalDays } from "../lib/calculations";
+import { calculateTotalDays, formatNumber } from "../lib/calculations";
 import { useLanguage } from "../i18n/LanguageProvider";
 import { LanguageSwitch } from "./LanguageSwitch";
 
 export function OnboardingForm() {
   const { actions } = useQadaStorage();
-  const { t, isRtl } = useLanguage();
+  const { t, isRtl, locale } = useLanguage();
   const [years, setYears] = useState("");
   const [months, setMonths] = useState("");
   const [days, setDays] = useState("");
   const [error, setError] = useState("");
 
+  const preview = useMemo(() => {
+    const parseValue = (raw: string) => {
+      const parsed = parseInt(raw, 10);
+      return Number.isFinite(parsed) ? parsed : 0;
+    };
+
+    const yearsNum = parseValue(years);
+    const monthsNum = parseValue(months);
+    const daysNum = parseValue(days);
+    const hasNegative = yearsNum < 0 || monthsNum < 0 || daysNum < 0;
+    const hasAtLeastOne = yearsNum > 0 || monthsNum > 0 || daysNum > 0;
+    const estimatedDays = !hasNegative && hasAtLeastOne ? calculateTotalDays(yearsNum, monthsNum, daysNum) : 0;
+    const isValid = !hasNegative && hasAtLeastOne && estimatedDays > 0;
+
+    return {
+      yearsNum,
+      monthsNum,
+      daysNum,
+      hasNegative,
+      hasAtLeastOne,
+      estimatedDays,
+      estimatedPrayers: estimatedDays * 5,
+      isValid
+    };
+  }, [days, months, years]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    const yearsNum = parseInt(years, 10) || 0;
-    const monthsNum = parseInt(months, 10) || 0;
-    const daysNum = parseInt(days, 10) || 0;
-
-    if (yearsNum < 0 || monthsNum < 0 || daysNum < 0) {
+    if (preview.hasNegative) {
       setError(t("onboarding", "errorPositive"));
       return;
     }
 
-    if (yearsNum === 0 && monthsNum === 0 && daysNum === 0) {
+    if (!preview.hasAtLeastOne) {
       setError(t("onboarding", "errorAtLeastOne"));
       return;
     }
 
-    const totalDays = calculateTotalDays(yearsNum, monthsNum, daysNum);
-    if (totalDays <= 0) {
+    if (preview.estimatedDays <= 0) {
       setError(t("onboarding", "errorTotalPositive"));
       return;
     }
 
-    actions.start(totalDays);
+    actions.start(preview.estimatedDays);
   };
 
   return (
@@ -108,13 +129,40 @@ export function OnboardingForm() {
               </div>
             </div>
 
+            <div className={`sa-card-soft border border-dashed ${isRtl ? "text-right" : "text-left"}`}>
+              <div className="mb-3 text-sm font-semibold sa-gold">{t("onboarding", "previewTitle")}</div>
+
+              {preview.isValid ? (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <div className="text-xs uppercase tracking-[0.08em] sa-muted">
+                      {t("onboarding", "estimatedDays")}
+                    </div>
+                    <div className="mt-1 text-xl font-semibold text-emerald-100">
+                      {formatNumber(preview.estimatedDays, locale)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs uppercase tracking-[0.08em] sa-muted">
+                      {t("onboarding", "estimatedPrayers")}
+                    </div>
+                    <div className="mt-1 text-xl font-semibold text-emerald-100">
+                      {formatNumber(preview.estimatedPrayers, locale)}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-sm sa-muted">{t("onboarding", "previewInvalid")}</div>
+              )}
+            </div>
+
             {error && (
               <div className="rounded-xl border border-red-300/30 bg-red-500/15 px-4 py-3 text-sm text-red-100">
                 {error}
               </div>
             )}
 
-            <button type="submit" className="sa-btn-primary">
+            <button type="submit" className="sa-btn-primary" disabled={!preview.isValid}>
               {t("onboarding", "submit")}
             </button>
           </form>

@@ -1,3 +1,74 @@
+export const PRAYER_KEYS = ["fajr", "dhuhr", "asr", "maghrib", "isha"] as const;
+
+export type PrayerKey = (typeof PRAYER_KEYS)[number];
+export type PrayerCounts = Record<PrayerKey, number>;
+
+const PRAYERS_PER_DAY = PRAYER_KEYS.length;
+
+function normalizeInteger(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.floor(value);
+}
+
+export function buildPrayerCounts(days: number): PrayerCounts {
+  const safeDays = Math.max(0, normalizeInteger(days));
+  return {
+    fajr: safeDays,
+    dhuhr: safeDays,
+    asr: safeDays,
+    maghrib: safeDays,
+    isha: safeDays
+  };
+}
+
+export function sumPrayerCounts(counts: PrayerCounts): number {
+  return PRAYER_KEYS.reduce((total, key) => total + normalizeInteger(counts[key]), 0);
+}
+
+export type PrayerStats = {
+  totalPrayersTarget: number;
+  totalPrayersRemaining: number;
+  totalPrayersCompleted: number;
+  daysRemaining: number;
+  daysCompleted: number;
+  surplusDays: number;
+  surplusPrayersRemainder: number;
+  progress: number;
+};
+
+export function derivePrayerStats(totalTarget: number, prayersRemaining: PrayerCounts): PrayerStats {
+  const safeTotalTarget = Math.max(0, normalizeInteger(totalTarget));
+  const normalizedRemaining = PRAYER_KEYS.reduce((total, key) => {
+    const value = normalizeInteger(prayersRemaining[key]);
+    return total + Math.min(safeTotalTarget, value);
+  }, 0);
+
+  const totalPrayersTarget = safeTotalTarget * PRAYERS_PER_DAY;
+  const totalPrayersRemaining = normalizedRemaining;
+  const totalPrayersCompleted = totalPrayersTarget - totalPrayersRemaining;
+  const daysRemaining = Math.max(0, Math.ceil(totalPrayersRemaining / PRAYERS_PER_DAY));
+  const rawDaysCompleted = Math.floor(totalPrayersCompleted / PRAYERS_PER_DAY);
+  const daysCompleted = Math.max(0, Math.min(safeTotalTarget, rawDaysCompleted));
+
+  const surplusPrayers = Math.max(0, -totalPrayersRemaining);
+  const surplusDays = Math.floor(surplusPrayers / PRAYERS_PER_DAY);
+  const surplusPrayersRemainder = surplusPrayers % PRAYERS_PER_DAY;
+
+  const progressCompleted = Math.max(0, Math.min(totalPrayersCompleted, totalPrayersTarget));
+  const progress = calculateProgress(progressCompleted, totalPrayersTarget);
+
+  return {
+    totalPrayersTarget,
+    totalPrayersRemaining,
+    totalPrayersCompleted,
+    daysRemaining,
+    daysCompleted,
+    surplusDays,
+    surplusPrayersRemainder,
+    progress
+  };
+}
+
 export function calculateTotalDays(
   years: number,
   months: number,
